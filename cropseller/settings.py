@@ -39,7 +39,7 @@ import os
 SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-local-secret")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
