@@ -6,6 +6,8 @@ from django.db import connection
 import random
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django.db import models
+
 
 
 @csrf_exempt
@@ -159,42 +161,36 @@ def productdetail(request, productid):
     })
 
 
+from django.utils.timezone import now
+from datetime import timedelta
+
 @csrf_exempt
 def producthistory(request, productid):
-    query = """
-        SELECT bucket, COUNT(*) AS bid_count
-        FROM (
-            SELECT
-                CASE
-                    WHEN created_time >= NOW() - INTERVAL 30 DAY AND created_time < NOW() - INTERVAL 25 DAY THEN '30d'
-                    WHEN created_time >= NOW() - INTERVAL 25 DAY AND created_time < NOW() - INTERVAL 20 DAY THEN '25d'
-                    WHEN created_time >= NOW() - INTERVAL 20 DAY AND created_time < NOW() - INTERVAL 15 DAY THEN '20d'
-                    WHEN created_time >= NOW() - INTERVAL 15 DAY AND created_time < NOW() - INTERVAL 10 DAY THEN '15d'
-                    WHEN created_time >= NOW() - INTERVAL 10 DAY AND created_time < NOW() - INTERVAL 5 DAY  THEN '10d'
-                    WHEN created_time >= NOW() - INTERVAL 5 DAY  AND created_time < NOW()                  THEN '5d'
-                    ELSE NULL
-                END AS bucket
-            FROM biddings
-            WHERE product_id = %s
-        ) t
-        WHERE bucket IS NOT NULL
-        GROUP BY bucket
-        ORDER BY FIELD(bucket, '30d','25d','20d','15d','10d','5d');
-    """
+    today = now()
 
-    with connection.cursor() as cursor:
-        cursor.execute(query, [productid])
-        rows = cursor.fetchall()
+    buckets = {
+        "30d": (today - timedelta(days=30), today - timedelta(days=25)),
+        "25d": (today - timedelta(days=25), today - timedelta(days=20)),
+        "20d": (today - timedelta(days=20), today - timedelta(days=15)),
+        "15d": (today - timedelta(days=15), today - timedelta(days=10)),
+        "10d": (today - timedelta(days=10), today - timedelta(days=5)),
+        "5d":  (today - timedelta(days=5), today),
+    }
 
-    # bucket -> count
-    data_map = {row[0]: row[1] for row in rows}
+    result = []
 
-    labels = ['30d', '25d', '20d', '15d', '10d', '5d']
-
-    # fill missing buckets with 0
-    result = [data_map.get(label, 0) for label in labels]
+    for label, (start, end) in buckets.items():
+        count = Bidding.objects.filter(
+            product_id=productid,
+            created_time__gte=start,
+            created_time__lt=end
+        ).count()
+        result.append(count)
 
     return JsonResponse(result, safe=False)
+
+
+
 
 @csrf_exempt
 def placebid(request, bid_quantity, bid_price, id, product_id):
@@ -214,7 +210,7 @@ def placebid(request, bid_quantity, bid_price, id, product_id):
             user=user,
             bid_price=bid_price,
             bid_quantity=bid_quantity,
-            created_time=str(datetime.now())
+            created_time = models.DateTimeField(auto_now_add=True)
         )
 
         return JsonResponse(True, safe=False)

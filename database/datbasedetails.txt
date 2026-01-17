@@ -1,0 +1,10 @@
+hostname:dpg-d5lqovkmrvns73emv610-a
+port : 5432
+database : cropseller_db
+username: cropseller_db_user
+password:vjitfHxwOCfBFfY7kDf7teWS2L7ey8nO
+internaldatabaseurl :postgresql://cropseller_db_user:vjitfHxwOCfBFfY7kDf7teWS2L7ey8nO@dpg-d5lqovkmrvns73emv610-a/cropseller_db
+external database url :
+postgresql://cropseller_db_user:vjitfHxwOCfBFfY7kDf7teWS2L7ey8nO@dpg-d5lqovkmrvns73emv610-a.singapore-postgres.render.com/cropseller_db
+psql command:
+PGPASSWORD=vjitfHxwOCfBFfY7kDf7teWS2L7ey8nO psql -h dpg-d5lqovkmrvns73emv610-a.singapore-postgres.render.com -U cropseller_db_user cropseller_db
