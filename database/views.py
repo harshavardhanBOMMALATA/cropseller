@@ -905,3 +905,8 @@ def endbid(request, productid):
         return JsonResponse({
             "status": "failure"
         })
+
+
+@csrf_exempt
+def checking():
+    return JsonResponse({"status":"working"})

@@ -19,7 +19,9 @@ signupBtn.addEventListener("click", function (event) {
     fetch('/database/signup/', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRFToken' : getCSRFToken()
+
         },
         body: JSON.stringify({
             name: name,
@@ -64,4 +66,9 @@ function showSuccessAndRedirect() {
     setTimeout(() => {
         window.location.href = "/";
     }, 2000);
+}
+
+
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
