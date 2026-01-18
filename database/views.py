@@ -10,37 +10,28 @@ from django.db import models
 
 
 
+import traceback
+
 @csrf_exempt
 def user_login(request):
-    if request.method != 'POST':
-        return JsonResponse(
-            {'status': 'error', 'message': 'Invalid request'},
-            status=405
-        )
-
     try:
+        if request.method != 'POST':
+            return JsonResponse({'status': 'error'}, status=405)
+
         data = json.loads(request.body.decode('utf-8'))
-    except Exception:
-        return JsonResponse(
-            {'status': 'fail', 'message': 'Invalid JSON'},
-            status=400
-        )
+        email = data.get('username')
+        password = data.get('password')
 
-    email = data.get('username')
-    password = data.get('password')
-
-    if not email or not password:
-        return JsonResponse(
-            {'status': 'fail', 'message': 'Missing credentials'},
-            status=400
-        )
-
-    try:
         user = User.objects.get(email=email, password=password)
         request.session['email'] = user.email
+
         return JsonResponse({'status': 'success'})
-    except User.DoesNotExist:
-        return JsonResponse({'status': 'fail'})
+
+    except Exception as e:
+        print("LOGIN ERROR:", e)
+        traceback.print_exc()
+        return JsonResponse({'status': 'error'}, status=500)
+
 
 
 @csrf_exempt
