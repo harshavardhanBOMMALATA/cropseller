@@ -1,6 +1,9 @@
 from django.db import models
 
-# Create your models here.
+
+# =========================
+# USER
+# =========================
 class User(models.Model):
     user_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=100)
@@ -10,7 +13,17 @@ class User(models.Model):
     email = models.EmailField(max_length=255)
     photo = models.CharField(max_length=255)
 
+    class Meta:
+        db_table = "users"
+        managed = False
 
+    def __str__(self):
+        return self.name
+
+
+# =========================
+# PRODUCT
+# =========================
 class Product(models.Model):
     product_id = models.IntegerField(primary_key=True)
     product_name = models.CharField(max_length=100)
@@ -19,14 +32,15 @@ class Product(models.Model):
     delivery = models.CharField(max_length=200)
     price_per_kg = models.DecimalField(max_digits=10, decimal_places=2)
     photo_url = models.URLField(max_length=500)
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        db_column='user_id'
+        db_column="user_id"
     )
+
     created_at = models.DateTimeField()
 
-    # NEW COLUMNS
     description = models.CharField(max_length=500)
     fssai_license = models.CharField(max_length=200)
     organic_certified = models.CharField(max_length=200)
@@ -34,73 +48,91 @@ class Product(models.Model):
     crop_year = models.CharField(max_length=200)
     packaging = models.CharField(max_length=200)
     supply_capacity = models.CharField(max_length=200)
-    enddate=models.CharField(max_length=200)
+    enddate = models.CharField(max_length=200)
 
-
-
+    class Meta:
+        db_table = "products"
+        managed = False
 
     def __str__(self):
         return self.product_name
 
 
+# =========================
+# BIDDING
+# =========================
 class Bidding(models.Model):
     bidding_id = models.CharField(max_length=100, primary_key=True)
+
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        db_column='product_id'
+        db_column="product_id"
     )
+
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        db_column='user_id'
+        db_column="user_id"
     )
+
     bid_price = models.DecimalField(max_digits=10, decimal_places=2)
     bid_quantity = models.IntegerField()
     created_time = models.CharField(max_length=100)
-
-    # ✅ NEW COLUMN
     verdict = models.CharField(max_length=20)
+
+    class Meta:
+        db_table = "biddings"
+        managed = False
 
     def __str__(self):
         return self.bidding_id
 
 
+# =========================
+# ORDER
+# =========================
 class Order(models.Model):
     order_id = models.CharField(max_length=10, primary_key=True)
 
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
-        db_column='product_id'
+        db_column="product_id"
     )
 
     bidding = models.ForeignKey(
         Bidding,
         on_delete=models.CASCADE,
-        db_column='bidding_id'
+        db_column="bidding_id"
     )
 
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        db_column='user_id'
+        db_column="user_id"
     )
 
     verdict = models.CharField(max_length=20)
 
+    class Meta:
+        db_table = "orders"
+        managed = False
 
     def __str__(self):
         return self.order_id
 
 
+# =========================
+# TRANSACTION
+# =========================
 class Transaction(models.Model):
     transaction_id = models.CharField(max_length=10, primary_key=True)
 
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
-        db_column='order_id'
+        db_column="order_id"
     )
 
     payment_method = models.CharField(max_length=50)
@@ -108,18 +140,24 @@ class Transaction(models.Model):
     status = models.CharField(max_length=20)
     transaction_date = models.DateTimeField()
 
+    class Meta:
+        db_table = "transactions"
+        managed = False
 
     def __str__(self):
         return self.transaction_id
 
 
+# =========================
+# TRANSPORTATION
+# =========================
 class Transportation(models.Model):
     transportation_id = models.CharField(max_length=10, primary_key=True)
 
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
-        db_column='order_id'
+        db_column="order_id"
     )
 
     vehicle_number = models.CharField(max_length=20)
@@ -139,6 +177,10 @@ class Transportation(models.Model):
     destination_latitude = models.DecimalField(max_digits=10, decimal_places=7)
     destination_longitude = models.DecimalField(max_digits=10, decimal_places=7)
 
+    class Meta:
+        db_table = "transportation"
+        managed = False
 
     def __str__(self):
         return self.transportation_id
+
